@@ -58,3 +58,25 @@ void setup(){
 void loop(){
 	
 }  // end loop()
+
+
+// run mixer servo for a period of time
+void runMixer(int period){
+	Serial.println("Just a stub need to finish runMixer()");
+	Serial.println(period);
+}  // end runMixer()
+
+// run pump to dispense desired volume
+void dipenseSolution(){
+	Serial.println("Just a stub, need to finish dispenseSolution.");
+}  // end dispenseSolution()
+
+// gather salinity probe readings
+void salinityTest(){
+	Serial.println("Just a stub, need to finish salinityTest()");
+}  // end salinityTest()
+
+// plot all data to time plot
+void plotData(){
+	Serial.println("Just a stub, need finish plotData");
+}  // end plotData()
