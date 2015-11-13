@@ -74,10 +74,15 @@ void runMixer(int period){
 // run pump to dispense desired volume
 void dispenseSolution(){
 	Serial.println("Just a stub, need to finish dispenseSolution.");
+	float volume;
 	Serial.println("Enter desired volume to dispense in milliliters:");
-	if (Serial.available() > 0){
-		
+	Serial.flush();
+	while (Serial.available() == 0){
 	}
+	volume = Serial.parseFloat();
+	Serial.print("you have entered: ");
+	Serial.print(volume);
+	Serial.println(" milliliters.");
 }  // end dispenseSolution()
 
 // gather salinity probe readings
@@ -112,13 +117,22 @@ void buildDataSet(int inputPin){                //  could combine all these func
 
 // function to calculate rolling average of ADC counts
 // be sure to call buildDataSet() before calling this function
-float calculateRollingAvg(){
+float calculateRollingAvg(){                    //  ***  maybe change this to accept an array as a parameter???  ***
 	float average = ((float)readings[0] + (float)readings[1]) / 2;
 	for (int i = 2; i < samples; i++){
 		average = (average + (float)readings[i]) / 2;
 	}
 	return average;
 }  //  end calculateRollingAvg()
+
+//function to calculate rolling average from an array
+float rollingAvgFromArray(float theArray[]){
+	float average = (theArray[0] + theArray[1]) / 2;
+	for (int i = 2; i < sizeof(theArray); i++){
+		average = (average + theArray[i]) / 2;
+	}
+	return average;
+}  // end of rollingAvgFromArray()
 
 // function to convert single ADC count to millivolt value
 float rawToVoltage(float count){
