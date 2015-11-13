@@ -41,7 +41,10 @@ Servo mixerServo;                               // servo object for mixer motor
 Statistics stats(samples);                      // create instance of Stats object for standard dev, mean etc. calculations
 
 void setup(){
+	pinMode(PROBEANODE, OUTPUT);
+	digitalWrite(PROBEANODE, HIGH);             // set pin high since using a PNP transistor this circuit is active low, may not need this since we are using a pull-up resistor
 	mixerServo.attach(MIXERPIN);
+	mixerServo.write(90);                       // initialize continuous rotation servo to stopped position
 	Serial.begin(9600);
 	analogReference(DEFAULT);                   // initialize reference voltage   *** be sure to set #define arefVoltage accordingly  ***
 	                                            // DEFAULT = 5v, INTERNAL = 1.1v, EXTERNAL = external reference on AREF pin
@@ -64,11 +67,17 @@ void loop(){
 void runMixer(int period){
 	Serial.println("Just a stub need to finish runMixer()");
 	Serial.println(period);
+	mixerServo.write(45);                       // continuous rotation servo: 0=full speed one direction, 90=stopped, 180=full speed opposite direction
+	delay(period);                              // ***  maybe use a timer interrupt instead or key press to stop mixer??  ***
 }  // end runMixer()
 
 // run pump to dispense desired volume
-void dipenseSolution(){
+void dispenseSolution(){
 	Serial.println("Just a stub, need to finish dispenseSolution.");
+	Serial.println("Enter desired volume to dispense in milliliters:");
+	if (Serial.available() > 0){
+		
+	}
 }  // end dispenseSolution()
 
 // gather salinity probe readings
@@ -80,3 +89,48 @@ void salinityTest(){
 void plotData(){
 	Serial.println("Just a stub, need finish plotData");
 }  // end plotData()
+
+//  function to fill array with raw ADC readings
+void buildDataSet(int inputPin){                //  could combine all these functions into one
+	                                            //  but having separate arrays we can manipulate
+	                                            //  data in more ways for analysis
+	Serial.print("Gathering data and compiling sample set of ");
+	Serial.print(samples);
+	Serial.println(" ADC counts");
+	Serial.print("and a delay of ");
+	Serial.print(pause);
+	Serial.println(" milliseconds between readings.");
+	Serial.print("ADC reference voltage of ");
+	Serial.print(arefVoltage);
+	Serial.println(" volts.");
+	// fill array with readings from ADC
+	for (int i; i < samples; i++){
+		readings[i] = analogRead(inputPin);
+		delay(pause);
+	}
+}  // end getDataSet()
+
+// function to calculate rolling average of ADC counts
+// be sure to call buildDataSet() before calling this function
+float calculateRollingAvg(){
+	float average = ((float)readings[0] + (float)readings[1]) / 2;
+	for (int i = 2; i < samples; i++){
+		average = (average + (float)readings[i]) / 2;
+	}
+	return average;
+}  //  end calculateRollingAvg()
+
+// function to convert single ADC count to millivolt value
+float rawToVoltage(float count){
+	/*Serial.println("Converting ADC counts to millivolts.....");
+	float volts = 0.0;
+	for (int i; i < samples; i++){
+		volts = (float)readings[i] * arefVoltage;
+		volts /= 1024.0;
+		voltage[i] = volts;
+	}*/
+	float volts = 0.0;
+	volts = count * arefVoltage;
+	volts /= 1024.0;
+	return volts;
+}  // end rawToVoltage()
