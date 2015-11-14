@@ -71,6 +71,7 @@ void runMixer(){
 	while (Serial.available() == 0){
 	}
 	mixerServo.write(90);                       // turn off servo
+	// ***  need to flush or get rid of entered key press  ***
 }  // end runMixer()
 
 // run pump to dispense desired volume
@@ -85,6 +86,7 @@ void dispenseSolution(){
 	Serial.print("you have entered: ");
 	Serial.print(volume);
 	Serial.println(" milliliters.");
+	// need to put a check here of value entered before running pump
 }  // end dispenseSolution()
 
 // gather salinity probe readings
