@@ -64,11 +64,13 @@ void loop(){
 
 
 // run mixer servo for a period of time
-void runMixer(int period){
+void runMixer(){
 	Serial.println("Just a stub need to finish runMixer()");
-	Serial.println(period);
 	mixerServo.write(45);                       // continuous rotation servo: 0=full speed one direction, 90=stopped, 180=full speed opposite direction
-	delay(period);                              // ***  maybe use a timer interrupt instead or key press to stop mixer??  ***
+	Serial.flush();
+	while (Serial.available() == 0){
+	}
+	mixerServo.write(90);                       // turn off servo
 }  // end runMixer()
 
 // run pump to dispense desired volume
