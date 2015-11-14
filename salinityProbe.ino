@@ -81,6 +81,7 @@ void runMixer(){
 // run pump to dispense desired volume
 void dispenseSolution(){
 	//Serial.println("Just a stub, need to finish dispenseSolution.");
+	String userInput;
 	float volume;
 	char check = 'n';                           // used for incoming byte to verify volume input
 	
@@ -90,7 +91,9 @@ void dispenseSolution(){
 		Serial.flush();
 		while (Serial.available() == 0){
 		}
-		volume = Serial.parseFloat();
+		userInput = Serial.readStringUntil('\n');
+		volume = userInput.toFloat();
+		//volume = Serial.parseFloat();
 		Serial.print("You have entered: ");
 		Serial.print(volume);
 		Serial.println(" milliliters.");
