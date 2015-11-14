@@ -18,6 +18,7 @@ by David Schwehr Novembr 2015 (for Group D5)
 //  ----- Defines and Constants  -----  //
 #define samples 30                              // number of readings to include in standard deviation calc also length of data array
 #define arefVoltage 5.0                         // external reference voltage, 1.1v internal, or default 5v  *** besure to change analogRef()  ***
+#define mlPerSecond 25.0                        // volume per second of pump output, used to calculate time pump runs for desired volume
 const uint16_t pause = 300;                     // delay period between readings in milliseconds
 const uint8_t PROBEPIN = A0;                    // input pin for probe to ADC
 const uint8_t TEMPPIN = A3;                     // input pin for thermometer to ADC
@@ -41,7 +42,9 @@ Servo mixerServo;                               // servo object for mixer motor
 Statistics stats(samples);                      // create instance of Stats object for standard dev, mean etc. calculations
 
 void setup(){
+	pinMode(PUMPPIN, OUTPUT);
 	pinMode(PROBEANODE, OUTPUT);
+	digitalWrite(PUMPPIN, HIGH);
 	digitalWrite(PROBEANODE, HIGH);             // set pin high since using a PNP transistor this circuit is active low, may not need this since we are using a pull-up resistor
 	mixerServo.attach(MIXERPIN);
 	mixerServo.write(90);                       // initialize continuous rotation servo to stopped position
@@ -59,7 +62,7 @@ void setup(){
 }  // end setup()
 
 void loop(){
-	
+	dispenseSolution();
 }  // end loop()
 
 
@@ -67,26 +70,47 @@ void loop(){
 void runMixer(){
 	Serial.println("Just a stub need to finish runMixer()");
 	mixerServo.write(45);                       // continuous rotation servo: 0=full speed one direction, 90=stopped, 180=full speed opposite direction
+	Serial.println("Press any key to stop mixer motor.");
 	Serial.flush();
 	while (Serial.available() == 0){
 	}
 	mixerServo.write(90);                       // turn off servo
-	// ***  need to flush or get rid of entered key press  ***
+	Serial.flush();                             // ***  need to flush or get rid of entered key press  ***
 }  // end runMixer()
 
 // run pump to dispense desired volume
 void dispenseSolution(){
-	Serial.println("Just a stub, need to finish dispenseSolution.");
+	//Serial.println("Just a stub, need to finish dispenseSolution.");
 	float volume;
-	Serial.println("Enter desired volume to dispense in milliliters:");
-	Serial.flush();
-	while (Serial.available() == 0){
+	char check = 'n';                           // used for incoming byte to verify volume input
+	
+	while (check != 'y'){
+		Serial.setTimeout(8000);
+		Serial.println("Enter desired volume to dispense in milliliters:");
+		Serial.flush();
+		while (Serial.available() == 0){
+		}
+		volume = Serial.parseFloat();
+		Serial.print("You have entered: ");
+		Serial.print(volume);
+		Serial.println(" milliliters.");
+		Serial.println("Press 'y' to confirm volume, any other key to re-enter volume desired.");
+		while (Serial.available() == 0){
+		}
+		check = Serial.read();
+		Serial.print("Check byte is: ");
+		Serial.println(check);
 	}
-	volume = Serial.parseFloat();
-	Serial.print("you have entered: ");
-	Serial.print(volume);
-	Serial.println(" milliliters.");
-	// need to put a check here of value entered before running pump
+	
+	if (check == 'y'){                          // redundant check
+		int period = (volume/mlPerSecond) * 1000; 
+		digitalWrite(PUMPPIN, HIGH);
+		delay(period);
+		digitalWrite(PUMPPIN, LOW);
+	}else{
+		Serial.println("Exiting dispenseSolution()");
+	}
+	
 }  // end dispenseSolution()
 
 // gather salinity probe readings
