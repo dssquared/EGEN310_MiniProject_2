@@ -19,7 +19,7 @@ by David Schwehr Novembr 2015 (for Group D5)
 #define samples 30                              // number of readings to include in standard deviation calc also length of data array
 #define arefVoltage 5.0                         // external reference voltage, 1.1v internal, or default 5v  *** besure to change analogRef()  ***
 #define mlPerSecond 25.0                        // volume per second of pump output, used to calculate time pump runs for desired volume
-const uint16_t pause = 300;                     // delay period between readings in milliseconds
+const uint16_t PAUSE = 300;                     // delay period between readings in milliseconds
 const uint8_t PROBEPIN = A0;                    // input pin for probe to ADC
 const uint8_t TEMPPIN = A3;                     // input pin for thermometer to ADC
 const uint8_t PUMPPIN = 3;                      // digital pin for pump MOSFET
@@ -59,23 +59,60 @@ void setup(){
 		temperatureC[i] = 0.0;
 		temperatureF[i] = 0.0;
 	}
+	printMenu();
 }  // end setup()
 
 void loop(){
-	dispenseSolution();
+	char menuSelection;
+	if (Serial.available() > 0){
+		menuSelection = Serial.read();
+		switch(menuSelection){
+			case 'm':
+			runMixer();
+			Serial.flush();
+			break;
+			case 'p':
+			dispenseSolution();
+			Serial.flush();
+			break;
+			case 's':
+			salinityTest();
+			Serial.flush();
+			break;
+			case 'd':
+			plotData();
+			Serial.flush();
+			break;
+			default:
+			Serial.println("Invalid entry, try again.");
+			printMenu();
+			Serial.flush();
+			break;
+		}  // end switch
+	}  // end if serial.avail()
 }  // end loop()
 
 
+// function to print menu/choices while using terminal to control sketch
+void printMenu(){
+	Serial.println("Please make a selection from the following:");
+	Serial.println("     Enter 'm' to start mixer,");
+	Serial.println("     Enter 'p' to enter desired volume and start pump,");
+	Serial.println("     Enter 's' to measure salinity,");
+	Serial.println("     Enter 'd' to display data on plot.");
+}  //  end printMenu()
+
 // run mixer servo for a period of time
 void runMixer(){
-	Serial.println("Just a stub need to finish runMixer()");
-	mixerServo.write(45);                       // continuous rotation servo: 0=full speed one direction, 90=stopped, 180=full speed opposite direction
+	//Serial.println("Just a stub need to finish runMixer()");
+	mixerServo.write(0);                        // continuous rotation servo: 0=full speed one direction, 90=stopped, 180=full speed opposite direction
 	Serial.println("Press any key to stop mixer motor.");
 	Serial.flush();
 	while (Serial.available() == 0){
 	}
 	mixerServo.write(90);                       // turn off servo
-	Serial.flush();                             // ***  need to flush or get rid of entered key press  ***
+	Serial.flush();
+	printMenu();
 }  // end runMixer()
 
 // run pump to dispense desired volume
@@ -83,7 +120,7 @@ void dispenseSolution(){
 	//Serial.println("Just a stub, need to finish dispenseSolution.");
 	String userInput;
 	float volume;
-	char check = 'n';                           // used for incoming byte to verify volume input
+	char check = 'n';                           // used for incoming byte to verify volume input, initialize to anything but 'y'
 	
 	while (check != 'y'){
 		Serial.setTimeout(8000);
@@ -91,7 +128,7 @@ void dispenseSolution(){
 		Serial.flush();
 		while (Serial.available() == 0){
 		}
-		userInput = Serial.readStringUntil('\n');
+		userInput = Serial.readStringUntil('\n');    //  ***  be sure to have terminal program set to send new line/LF char  ***
 		volume = userInput.toFloat();
 		//volume = Serial.parseFloat();
 		Serial.print("You have entered: ");
@@ -114,35 +151,34 @@ void dispenseSolution(){
 		Serial.println("Exiting dispenseSolution()");
 	}
 	
+	printMenu();
+	
 }  // end dispenseSolution()
 
 // gather salinity probe readings
 void salinityTest(){
 	Serial.println("Just a stub, need to finish salinityTest()");
+	digitalWrite(PROBEANODE, LOW);              // turn on power to anode side of probe, using PNP transistor = active low
+	buildDataSet(PROBEPIN);
+	digitalWrite(PROBEANODE, HIGH);             // turn of power to anode
+	// ***  need to finish data processing and add result to variable to be plotted  ***
+	printMenu();
 }  // end salinityTest()
 
 // plot all data to time plot
 void plotData(){
 	Serial.println("Just a stub, need finish plotData");
+	printMenu();
 }  // end plotData()
 
 //  function to fill array with raw ADC readings
 void buildDataSet(int inputPin){                //  could combine all these functions into one
 	                                            //  but having separate arrays we can manipulate
 	                                            //  data in more ways for analysis
-	Serial.print("Gathering data and compiling sample set of ");
-	Serial.print(samples);
-	Serial.println(" ADC counts");
-	Serial.print("and a delay of ");
-	Serial.print(pause);
-	Serial.println(" milliseconds between readings.");
-	Serial.print("ADC reference voltage of ");
-	Serial.print(arefVoltage);
-	Serial.println(" volts.");
 	// fill array with readings from ADC
 	for (int i; i < samples; i++){
 		readings[i] = analogRead(inputPin);
-		delay(pause);
+		delay(PAUSE);
 	}
 }  // end getDataSet()
 
@@ -157,8 +193,9 @@ float calculateRollingAvg(){                    //  ***  maybe change this to ac
 }  //  end calculateRollingAvg()
 
 //function to calculate rolling average from an array
-float rollingAvgFromArray(float theArray[]){
+float rollingAvgFromArray(float theArray[]){    // will automatically pass by reference, no need for &
 	float average = (theArray[0] + theArray[1]) / 2;
+	
 	for (int i = 2; i < sizeof(theArray); i++){
 		average = (average + theArray[i]) / 2;
 	}
