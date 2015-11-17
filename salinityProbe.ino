@@ -22,9 +22,9 @@ by David Schwehr Novembr 2015 (for Group D5)
 const uint16_t PAUSE = 300;                     // delay period between readings in milliseconds
 const uint8_t PROBEPIN = A0;                    // input pin for probe to ADC
 const uint8_t TEMPPIN = A3;                     // input pin for thermometer to ADC
-const uint8_t PUMPPIN = 3;                      // digital pin for pump MOSFET
-const uint8_t MIXERPIN = 9;                     // PWM pin for mixer servo
-const uint8_t PROBEANODE = 8;                   // digital pin for probe on/off transistor *** active low, PNP transistor ***
+const uint8_t PUMPPIN = 9;                      // digital pin for pump MOSFET
+const uint8_t MIXERPIN = 3;                     // PWM pin for mixer servo
+const uint8_t PROBEANODE = 12;                  // digital pin for probe on/off transistor *** active low, PNP transistor ***
 
 //  ----- Variables  -----  //
 volatile uint16_t ADCcount;                     // analog read values  ***  may not use  ***
@@ -44,7 +44,7 @@ Statistics stats(samples);                      // create instance of Stats obje
 void setup(){
 	pinMode(PUMPPIN, OUTPUT);
 	pinMode(PROBEANODE, OUTPUT);
-	digitalWrite(PUMPPIN, HIGH);
+	digitalWrite(PUMPPIN, LOW);
 	digitalWrite(PROBEANODE, HIGH);             // set pin high since using a PNP transistor this circuit is active low, may not need this since we are using a pull-up resistor
 	mixerServo.attach(MIXERPIN);
 	mixerServo.write(90);                       // initialize continuous rotation servo to stopped position
