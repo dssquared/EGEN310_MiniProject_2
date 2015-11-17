@@ -29,6 +29,7 @@ const uint8_t PROBEANODE = 12;                  // digital pin for probe on/off 
 //  ----- Variables  -----  //
 volatile uint16_t ADCcount;                     // analog read values  ***  may not use  ***
 float rolling;                                  // analog reading rolling avg, mainly used for comparison to calculated mean
+float percentSalt;                              // final calculation of percent salt by weight
 float mean;                                     // mean for std. dev. calculation or store info from stats library
 float variance;                                 // variance for std dev. calculation or store info from stats library
 float stdDev;                                   // store info from stats library or just use print statements to view in monitor
@@ -160,7 +161,9 @@ void salinityTest(){
 	Serial.println("Just a stub, need to finish salinityTest()");
 	digitalWrite(PROBEANODE, LOW);              // turn on power to anode side of probe, using PNP transistor = active low
 	buildDataSet(PROBEPIN);
-	digitalWrite(PROBEANODE, HIGH);             // turn of power to anode
+	digitalWrite(PROBEANODE, HIGH);             // turn off power to anode
+	rolling = calculateRollingAvg();
+	percentSalt = (rolling/9) -75;              // need to find more accurate function,***  this is just for testing  ***
 	// ***  need to finish data processing and add result to variable to be plotted  ***
 	printMenu();
 }  // end salinityTest()
@@ -168,6 +171,10 @@ void salinityTest(){
 // plot all data to time plot
 void plotData(){
 	Serial.println("Just a stub, need finish plotData");
+	salinityTest();
+	Serial.print("Percent salt by weight: ");
+	Serial.print(percentSalt);
+	Serial.println(" %");
 	printMenu();
 }  // end plotData()
 
