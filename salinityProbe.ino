@@ -27,11 +27,9 @@ const uint8_t MIXERPIN = 3;                     // PWM pin for mixer servo
 const uint8_t PROBEANODE = 12;                  // digital pin for probe on/off transistor *** active low, PNP transistor ***
 
 //  ----- Variables  -----  //
-volatile uint16_t ADCcount;                     // analog read values  ***  may not use  ***
 float rolling;                                  // analog reading rolling avg, mainly used for comparison to calculated mean
 float percentSalt;                              // final calculation of percent salt by weight
 float mean;                                     // mean for std. dev. calculation or store info from stats library
-float variance;                                 // variance for std dev. calculation or store info from stats library
 float stdDev;                                   // store info from stats library or just use print statements to view in monitor
 int readings[samples];                          // ***  samples needs to be a define or this array will not be global  ***
 float voltage[samples];                         // raw ADC data converted to voltage in millivolts
@@ -169,13 +167,11 @@ void salinityTest(){
 }  // end salinityTest()
 
 // plot all data to time plot
+//  all serial output needs to be formatted for makerPlot
 void plotData(){
 	Serial.println("Just a stub, need finish plotData");
 	salinityTest();
-	Serial.print("Percent salt by weight: ");
-	Serial.print(percentSalt);
-	Serial.println(" %");
-	printMenu();
+	Serial.println(percentSalt);
 }  // end plotData()
 
 //  function to fill array with raw ADC readings
