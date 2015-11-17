@@ -70,24 +70,24 @@ void loop(){
 		switch(menuSelection){
 			case 'm':
 			runMixer();
-			Serial.flush();
+			flushBuffer();
 			break;
 			case 'p':
 			dispenseSolution();
-			Serial.flush();
+			flushBuffer();
 			break;
 			case 's':
 			salinityTest();
-			Serial.flush();
+			flushBuffer();
 			break;
 			case 'd':
 			plotData();
-			Serial.flush();
+			flushBuffer();
 			break;
 			default:
 			Serial.println("Invalid entry, try again.");
 			printMenu();
-			Serial.flush();
+			flushBuffer();
 			break;
 		}  // end switch
 	}  // end if serial.avail()
@@ -108,11 +108,11 @@ void runMixer(){
 	//Serial.println("Just a stub need to finish runMixer()");
 	mixerServo.write(0);                        // continuous rotation servo: 0=full speed one direction, 90=stopped, 180=full speed opposite direction
 	Serial.println("Press any key to stop mixer motor.");
-	Serial.flush();
+	flushBuffer();
 	while (Serial.available() == 0){
 	}
 	mixerServo.write(90);                       // turn off servo
-	Serial.flush();
+	flushBuffer();
 	printMenu();
 }  // end runMixer()
 
@@ -124,9 +124,9 @@ void dispenseSolution(){
 	char check = 'n';                           // used for incoming byte to verify volume input, initialize to anything but 'y'
 	
 	while (check != 'y'){
-		Serial.setTimeout(8000);
+		Serial.setTimeout(5000);
 		Serial.println("Enter desired volume to dispense in milliliters:");
-		Serial.flush();
+		flushBuffer();
 		while (Serial.available() == 0){
 		}
 		userInput = Serial.readStringUntil('\n');    //  ***  be sure to have terminal program set to send new line/LF char  ***
@@ -136,6 +136,7 @@ void dispenseSolution(){
 		Serial.print(volume);
 		Serial.println(" milliliters.");
 		Serial.println("Press 'y' to confirm volume, any other key to re-enter volume desired.");
+		flushBuffer();
 		while (Serial.available() == 0){
 		}
 		check = Serial.read();
@@ -223,3 +224,11 @@ float rawToVoltage(float count){
 	volts /= 1024.0;
 	return volts;
 }  // end rawToVoltage()
+
+// function to flush serial input buffer
+// since arduino 1.0 the serial.flush() works differently
+void flushBuffer(){
+	Serial.flush();
+	while (Serial.available())
+		Serial.read();
+}  // end flushBuffer()
