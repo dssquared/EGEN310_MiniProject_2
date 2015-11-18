@@ -16,10 +16,10 @@ by David Schwehr Novembr 2015 (for Group D5)
 #include <IntStatistics.h>
 
 //  ----- Defines and Constants  -----  //
-#define samples 30                              // number of readings to include in standard deviation calc also length of data array
+#define samples 16                              // number of readings to include in standard deviation calc also length of data array
 #define arefVoltage 5.0                         // external reference voltage, 1.1v internal, or default 5v  *** besure to change analogRef()  ***
-#define mlPerSecond 25.0                        // volume per second of pump output, used to calculate time pump runs for desired volume
-const uint16_t PAUSE = 300;                     // delay period between readings in milliseconds
+#define mlPerSecond 55.5                        // volume per second of pump output, used to calculate time pump runs for desired volume
+const uint16_t PAUSE = 100;                     // delay period between readings in milliseconds
 const uint8_t PROBEPIN = A0;                    // input pin for probe to ADC
 const uint8_t TEMPPIN = A3;                     // input pin for thermometer to ADC
 const uint8_t PUMPPIN = 9;                      // digital pin for pump MOSFET
@@ -100,7 +100,7 @@ void printMenu(){
 	Serial.println("     Enter 'm' to start mixer,");
 	Serial.println("     Enter 'p' to enter desired volume and start pump,");
 	Serial.println("     Enter 's' to measure salinity,");
-	Serial.println("     Enter 'd' to display data on plot.");
+	//Serial.println("     Enter 'd' to display data on plot.");
 }  //  end printMenu()
 
 // run mixer servo for a period of time
@@ -145,7 +145,7 @@ void dispenseSolution(){
 	}
 	
 	if (check == 'y'){                          // redundant check
-		int period = (volume/mlPerSecond) * 1000; 
+		float period = (volume/mlPerSecond) * 1000; 
 		digitalWrite(PUMPPIN, HIGH);
 		delay(period);
 		digitalWrite(PUMPPIN, LOW);
@@ -159,12 +159,22 @@ void dispenseSolution(){
 
 // gather salinity probe readings
 void salinityTest(){
-	Serial.println("Just a stub, need to finish salinityTest()");
+	//Serial.println("Just a stub, need to finish salinityTest()");
+	Serial.println("Testing salinity, stand by for percent salt reading.");
 	digitalWrite(PROBEANODE, LOW);              // turn on power to anode side of probe, using PNP transistor = active low
 	buildDataSet(PROBEPIN);
 	digitalWrite(PROBEANODE, HIGH);             // turn off power to anode
 	rolling = calculateRollingAvg();
-	percentSalt = (rolling/9) -75;              // need to find more accurate function,***  this is just for testing  ***
+	Serial.print("Rolling average: ");
+	Serial.println(rolling);
+	if (rolling < 500){
+		percentSalt = 0.0;
+	}else{
+		percentSalt = map(rolling, 500.0, 911.0, 0.0, 26.0);
+	}
+	Serial.print("Percent salt calculated: ");
+	Serial.print(percentSalt);
+	Serial.println(" %");
 	// ***  need to finish data processing and add result to variable to be plotted  ***
 	printMenu();
 }  // end salinityTest()
