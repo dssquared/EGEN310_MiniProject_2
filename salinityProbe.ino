@@ -6,6 +6,9 @@
 ****  will be used to control sketch remotely and operate      ****
 ****  servos for mixer and probe movement, 12v DC fluid pump   ****
 ****  and all other code required for the EGEN310 assignment.  ****
+****                                                           ****
+****  This version of the code is intended to control the      ****
+****   microcontroller over serial through a terminal          ****
 *******************************************************************
 by David Schwehr Novembr 2015 (for Group D5)
    github: dssquared
@@ -17,7 +20,7 @@ by David Schwehr Novembr 2015 (for Group D5)
 
 //  ----- Defines and Constants  -----  //
 #define samples 16                              // number of readings to include in standard deviation calc also length of data array
-#define arefVoltage 5.0                         // external reference voltage, 1.1v internal, or default 5v  *** besure to change analogRef()  ***
+#define arefVoltage 5.05                        // external reference voltage, 1.1v internal, or default 5v  *** besure to change analogRef()  ***
 #define mlPerSecond 55.5                        // volume per second of pump output, used to calculate time pump runs for desired volume
 const uint16_t PAUSE = 100;                     // delay period between readings in milliseconds
 const uint8_t PROBEPIN = A0;                    // input pin for probe to ADC
@@ -169,8 +172,10 @@ void salinityTest(){
 	Serial.println(rolling);
 	if (rolling < 500){
 		percentSalt = 0.0;
-	}else{
+	}else if(rolling > 499 && rolling < 911){   // *** maybe make the min and max a variable  ***
 		percentSalt = map(rolling, 500.0, 911.0, 0.0, 26.0);
+	} else{
+		percentSalt = 26.0;
 	}
 	Serial.print("Percent salt calculated: ");
 	Serial.print(percentSalt);
