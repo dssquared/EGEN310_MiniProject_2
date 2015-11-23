@@ -169,7 +169,7 @@ void salinityTest(){
 	rolling = calculateRollingAvg();
 	if (rolling < ADCMIN){
 		percentSalt = 0.0;
-	}else if(rolling > (ADCMIN -1) && rolling < (ADCMAX + 1)){
+	}else if(rolling >= ADCMIN && rolling <= ADCMAX ){
 		percentSalt = map(rolling, ADCMIN, ADCMAX, 0, 26);
 	}else{
 		percentSalt = 26.0;
