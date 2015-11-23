@@ -172,7 +172,7 @@ void salinityTest(){
 	Serial.println(rolling);
 	if (rolling < ADCMIN){
 		percentSalt = 0.0;
-	}else if(rolling > (ADCMIN - 1) && rolling < ADCMAX){   // *** maybe make the min and max a variable  ***
+	}else if(rolling >= ADCMIN && rolling <= ADCMAX){
 		percentSalt = map(rolling, (float)ADCMIN, (float)ADCMAX, 0.0, 26.0);
 	} else{
 		percentSalt = 26.0;
