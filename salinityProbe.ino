@@ -6,6 +6,10 @@
 ****  will be used to control sketch remotely and operate      ****
 ****  servos for mixer and probe movement, 12v DC fluid pump   ****
 ****  and all other code required for the EGEN310 assignment.  ****
+****                                                           ****
+****   This version of the code is intended to be used in      ****
+****   conjunction with MakerPlot for serial control and       ****
+****   communication with the microcontroller with MP GUI      ****
 *******************************************************************
 by David Schwehr Novembr 2015 (for Group D5)
    github: dssquared
@@ -25,6 +29,8 @@ const uint8_t TEMPPIN = A3;                     // input pin for thermometer to 
 const uint8_t PUMPPIN = 9;                      // digital pin for pump MOSFET
 const uint8_t MIXERPIN = 3;                     // PWM pin for mixer servo
 const uint8_t PROBEANODE = 12;                  // digital pin for probe on/off transistor *** active low, PNP transistor ***
+const uint16_t ADCMIN = 500;                    // ADC count minimum used for mapping count to percent salt, determined from calibration experiment
+const uint16_t ADCMAX = 911;                    // ADC count maximum used for mapping count to percent salt, determined form calibration experiment
 
 //  ----- Variables  -----  //
 float rolling;                                  // analog reading rolling avg, mainly used for comparison to calculated mean
@@ -161,10 +167,12 @@ void salinityTest(){
 	buildDataSet(PROBEPIN);
 	digitalWrite(PROBEANODE, HIGH);             // turn off power to anode
 	rolling = calculateRollingAvg();
-	if (rolling < 500){
+	if (rolling < ADCMIN){
 		percentSalt = 0.0;
+	}else if(rolling > (ADCMIN -1) && rolling < (ADCMAX + 1)){
+		percentSalt = map(rolling, ADCMIN, ADCMAX, 0, 26);
 	}else{
-		percentSalt = map(rolling, 500, 1024, 0, 26);
+		percentSalt = 26.0;
 	}
 	// ***  need to finish data processing and add result to variable to be plotted  ***
 	printMenu();
