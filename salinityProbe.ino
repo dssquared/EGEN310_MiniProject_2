@@ -15,8 +15,6 @@ by David Schwehr Novembr 2015 (for Group D5)
 */
 
 #include <Servo.h>
-#include <Statistics.h>
-#include <IntStatistics.h>
 
 //  ----- Defines and Constants  -----  //
 #define samples 16                              // number of readings to include in standard deviation calc also length of data array
@@ -45,7 +43,7 @@ float temperatureF[samples];                    // temperatures calculated from 
 
 //  ----- Inits -----  //
 Servo mixerServo;                               // servo object for mixer motor
-Statistics stats(samples);                      // create instance of Stats object for standard dev, mean etc. calculations
+
 
 void setup(){
 	pinMode(PUMPPIN, OUTPUT);
@@ -209,38 +207,13 @@ void buildDataSet(int inputPin){                //  could combine all these func
 
 // function to calculate rolling average of ADC counts
 // be sure to call buildDataSet() before calling this function
-float calculateRollingAvg(){                    //  ***  maybe change this to accept an array as a parameter???  ***
+float calculateRollingAvg(){
 	float average = ((float)readings[0] + (float)readings[1]) / 2;
 	for (int i = 2; i < samples; i++){
 		average = (average + (float)readings[i]) / 2;
 	}
 	return average;
 }  //  end calculateRollingAvg()
-
-//function to calculate rolling average from an array
-float rollingAvgFromArray(float theArray[]){    // will automatically pass by reference, no need for &
-	float average = (theArray[0] + theArray[1]) / 2;
-	
-	for (int i = 2; i < sizeof(theArray); i++){
-		average = (average + theArray[i]) / 2;
-	}
-	return average;
-}  // end of rollingAvgFromArray()
-
-// function to convert single ADC count to millivolt value
-float rawToVoltage(float count){
-	/*Serial.println("Converting ADC counts to millivolts.....");
-	float volts = 0.0;
-	for (int i; i < samples; i++){
-		volts = (float)readings[i] * arefVoltage;
-		volts /= 1024.0;
-		voltage[i] = volts;
-	}*/
-	float volts = 0.0;
-	volts = count * arefVoltage;
-	volts /= 1024.0;
-	return volts;
-}  // end rawToVoltage()
 
 // function to flush serial input buffer
 // since arduino 1.0 the serial.flush() works differently
