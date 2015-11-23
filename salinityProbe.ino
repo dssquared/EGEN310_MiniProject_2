@@ -28,6 +28,8 @@ const uint8_t TEMPPIN = A3;                     // input pin for thermometer to 
 const uint8_t PUMPPIN = 9;                      // digital pin for pump MOSFET
 const uint8_t MIXERPIN = 3;                     // PWM pin for mixer servo
 const uint8_t PROBEANODE = 12;                  // digital pin for probe on/off transistor *** active low, PNP transistor ***
+const uint16_t ADCMIN = 500;                    // minimum ADC count for percent salt calculation, determined from calibration experiment
+const uint16_t ADCMAX = 911;                    // maximum ADC count for percent salt calculation, determined from calibration experiment
 
 //  ----- Variables  -----  //
 volatile uint16_t ADCcount;                     // analog read values  ***  may not use  ***
@@ -170,10 +172,10 @@ void salinityTest(){
 	rolling = calculateRollingAvg();
 	Serial.print("Rolling average: ");
 	Serial.println(rolling);
-	if (rolling < 500){
+	if (rolling < ADCMIN){
 		percentSalt = 0.0;
-	}else if(rolling > 499 && rolling < 911){   // *** maybe make the min and max a variable  ***
-		percentSalt = map(rolling, 500.0, 911.0, 0.0, 26.0);
+	}else if(rolling > (ADCMIN - 1) && rolling < ADCMAX){   // *** maybe make the min and max a variable  ***
+		percentSalt = map(rolling, (float)ADCMIN, (float)ADCMAX, 0.0, 26.0);
 	} else{
 		percentSalt = 26.0;
 	}
